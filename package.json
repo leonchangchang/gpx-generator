@@ -22,7 +22,7 @@
     "mac": {
     "target": "dmg"
   }
-  }
+  },
   
 
   "devDependencies": {
