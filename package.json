@@ -18,11 +18,12 @@
     "win": {
       "target": "nsis",
       "icon": "icon.ico"
-    }
-  },
-  "mac": {
+    },
+    "mac": {
     "target": "dmg"
   }
+  }
+  
 
   "devDependencies": {
     "electron": "^42.4.0",
