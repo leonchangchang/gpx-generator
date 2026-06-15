@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet"
+          href="node_modules/leaflet/dist/leaflet.css">
+
+    <style>
+        html, body {
+    margin: 0;
+    height: 100%;
+}
+
+#container {
+    display: flex;
+    height: 100%;
+}
+
+#sidebar {
+    width: 350px;
+    padding: 10px;
+    overflow-y: auto;
+    border-right: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+
+#searchContainer {
+    position: relative;
+    display: inline-block;
+}
+
+#searchText {
+    width: 200px;
+}
+
+#suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 300px;
+
+    background: white;
+    border: 1px solid #ccc;
+
+    max-height: 250px;
+    overflow-y: auto;
+
+    z-index: 9999;
+
+    display: none;
+}
+
+.suggestion-item {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.suggestion-item:hover {
+    background: #f0f0f0;
+}
+
+#toolbar {
+    padding: 10px;
+    background: #f0f0f0;
+}
+
+#map {
+    flex: 1;
+}
+
+#speed {
+    width: 60px;
+}
+
+#stepDistance {
+    width: 60px;
+}
+
+#pointListContainer {
+    margin-top: 10px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+#pointList {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-left: 20px;
+}
+
+#btnExport,
+#btnCopy {
+
+    width: 140px;
+
+    height: 50px;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    margin-top: 5px;
+
+    cursor: pointer;
+}
+
+.point-item {
+    margin-bottom: 5px;
+}
+
+.delete-btn {
+    margin-left: 10px;
+}
+
+    </style>
+
+</head>
+
+<body>
+<div id="container">
+
+    <div id="sidebar">
+        <div id="toolbar">
+
+            <div id="searchContainer">
+
+            <input
+            id="searchText"
+            type="text"
+            placeholder="搜尋地點..."
+            autocomplete="off"
+            >
+
+            <button id="btnSearch">
+            搜尋
+            </button>
+
+            <div id="suggestions"></div>
+
+        </div>
+
+    
+
+    <br><br>
+
+    <button id="btnClear">
+        清空
+    </button>
+
+    <br><br>
+
+    速度：
+
+    <input
+        id="speed"
+        type="number"
+        value="15"
+        min="1"
+        max="100"
+    >
+
+    km/h
+
+    <br><br>
+
+    點間距：
+
+    <input
+    id="stepDistance"
+    type="number"
+    value="50"
+    min="1"
+>
+
+    公尺
+
+    <br><br>
+
+    <button id="btnExport">
+        匯出 GPX
+    </button>
+
+    <button id="btnCopy">
+    一鍵複製
+    </button>
+
+
+
+        </div>
+        <hr>
+
+        <h3>座標清單</h3>
+
+        <ul id="pointList"></ul>
+    </div>
+    <div id="map"></div>
+</div>
+<script src="node_modules/leaflet/dist/leaflet.js"></script>
+<script src="renderer.js"></script>
+
+</body>
+
+</html>
