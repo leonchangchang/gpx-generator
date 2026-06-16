@@ -229,10 +229,13 @@ function generateGpx() {
         for (let i = 0; i < path.length; i++) {
 
             const p = path[i];
+            const timeString = currentTime
+                .toISOString()
+                .replace(/\.\d{3}Z$/, "Z");
 
             gpx +=
 `  <wpt lat="${p.lat}" lon="${p.lon}">
-    <time>${currentTime.toISOString()}</time>
+    <time>${timeString}</time>
   </wpt>\n`;
 
             currentTime =
@@ -349,10 +352,10 @@ function interpolatePoints(
         );
 
     const count =
-        Math.max(
-            1,
-            Math.floor(distance / stepMeters)
-        );
+    Math.max(
+        1,
+        Math.round(distance / stepMeters)
+    );
 
     const result = [];
 

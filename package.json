@@ -15,6 +15,7 @@
   "build": {
     "appId": "com.leon.gpxgenerator",
     "productName": "GPX Generator",
+    "publish": null,
     "win": {
       "target": "nsis",
       "icon": "icon.ico"
