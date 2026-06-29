@@ -91,6 +91,23 @@
     padding-left: 20px;
 }
 
+#bulkInput {
+    width: 100%;
+    min-height: 100px;
+    margin-top: 10px;
+    box-sizing: border-box;
+    padding: 8px;
+    font-size: 14px;
+}
+
+#btnImportCoords {
+    width: 140px;
+    height: 40px;
+    font-size: 16px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
 #btnExport,
 #btnCopy {
 
@@ -176,6 +193,17 @@
 >
 
     公尺
+
+    <br><br>
+
+    <textarea
+        id="bulkInput"
+        placeholder="多筆座標：每行一組，格式例如 22.637605, 120.357825"
+    ></textarea>
+
+    <button id="btnImportCoords">
+        匯入座標
+    </button>
 
     <br><br>
 

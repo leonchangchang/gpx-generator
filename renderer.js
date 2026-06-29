@@ -10,6 +10,10 @@ L.tileLayer(
     }
 ).addTo(map);
 
+// 最大自動縮放層級（避免自動放大到過近）
+const MAX_FIT_ZOOM = 17;
+const FIT_PADDING = [50, 50];
+
 const points = [];
 const markers = [];
 
@@ -23,6 +27,12 @@ const searchText = document.getElementById("searchText");
 
 const suggestions =
     document.getElementById("suggestions");
+
+const btnImportCoords =
+    document.getElementById("btnImportCoords");
+
+const bulkInput =
+    document.getElementById("bulkInput");
 
 const btnExport =
     document.getElementById("btnExport");
@@ -41,8 +51,8 @@ const pointList =
 
 map.on('click', function (e) {
 
-    const lat = e.latlng.lat;
-    const lng = e.latlng.lng;
+    const lat = roundCoord(e.latlng.lat);
+    const lng = roundCoord(e.latlng.lng);
 
     points.push([lat, lng]);
 
@@ -99,7 +109,23 @@ btnSearch.addEventListener("click", async () => {
     const lat = parseFloat(result[0].lat);
     const lon = parseFloat(result[0].lon);
 
-    map.setView([lat, lon], 17);
+    const rlat = roundCoord(lat);
+    const rlon = roundCoord(lon);
+
+    map.setView([rlat, rlon], 17);
+
+    // 加入圖釘並加入座標清單
+    points.push([rlat, rlon]);
+    const marker = L.marker([rlat, rlon]).addTo(map);
+    markers.push(marker);
+
+    if (polyline) {
+        map.removeLayer(polyline);
+    }
+
+    polyline = L.polyline(points).addTo(map);
+
+    updatePointList();
 });
 
 searchText.addEventListener("keydown", function (e) {
@@ -121,6 +147,35 @@ searchText.addEventListener("input", () => {
         300
     );
 
+});
+
+btnImportCoords.addEventListener("click", () => {
+
+    const text = bulkInput.value.trim();
+
+    if (!text) {
+        alert("請輸入要匯入的座標");
+        return;
+    }
+
+    const imported = parseBulkCoordinates(text);
+
+    if (imported.length === 0) {
+        alert("無有效座標，請確認格式為：緯度, 經度，每行一組。");
+        return;
+    }
+
+    addPoints(imported);
+
+    bulkInput.value = "";
+});
+
+// 快捷鍵：按下 Ctrl+Enter 可快速匯入（textarea 保留單純 Enter 作換行）
+bulkInput.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        btnImportCoords.click();
+    }
 });
 
 async function loadSuggestions() {
@@ -165,16 +220,25 @@ async function loadSuggestions() {
                 searchText.value =
                     item.display_name;
 
-                map.setView(
-                    [
-                        parseFloat(item.lat),
-                        parseFloat(item.lon)
-                    ],
-                    17
-                );
+                const latSel = roundCoord(parseFloat(item.lat));
+                const lonSel = roundCoord(parseFloat(item.lon));
 
-                suggestions.style.display =
-                    "none";
+                map.setView([latSel, lonSel], 17);
+
+                // 加入圖釘並加入座標清單
+                points.push([latSel, lonSel]);
+                const selMarker = L.marker([latSel, lonSel]).addTo(map);
+                markers.push(selMarker);
+
+                if (polyline) {
+                    map.removeLayer(polyline);
+                }
+
+                polyline = L.polyline(points).addTo(map);
+
+                updatePointList();
+
+                suggestions.style.display = "none";
             }
         );
 
@@ -229,12 +293,14 @@ function generateGpx() {
         for (let i = 0; i < path.length; i++) {
 
             const p = path[i];
+            const lat = roundCoord(p.lat);
+            const lon = roundCoord(p.lon);
             const timeString = currentTime
                 .toISOString()
                 .replace(/\.\d{3}Z$/, "Z");
 
             gpx +=
-`  <wpt lat="${p.lat}" lon="${p.lon}">
+`  <wpt lat="${lat}" lon="${lon}">
     <time>${timeString}</time>
   </wpt>\n`;
 
@@ -301,6 +367,60 @@ btnCopy.addEventListener("click", async () => {
     }
 
 });
+
+function addPoints(newPoints) {
+
+    for (const point of newPoints) {
+
+        points.push(point);
+
+        const marker = L.marker(point).addTo(map);
+        markers.push(marker);
+    }
+
+    redrawPolyline();
+    updatePointList();
+
+    // 匯入後自動縮放到包含所有點的邊界
+    if (points.length > 0) {
+        try {
+            const bounds = L.latLngBounds(points);
+            map.fitBounds(bounds, { padding: [50, 50], maxZoom: 17 });
+        }
+        catch (err) {
+            console.warn('fitBounds 失敗：', err);
+        }
+    }
+}
+
+function parseBulkCoordinates(text) {
+
+    const lines = text
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+
+    const parsed = [];
+
+    for (const line of lines) {
+
+        const parts = line
+            .split(/[,\s]+/)
+            .filter(part => part.length > 0);
+
+        if (parts.length < 2)
+            continue;
+
+        const lat = parseFloat(parts[0]);
+        const lon = parseFloat(parts[1]);
+
+        if (Number.isFinite(lat) && Number.isFinite(lon)) {
+            parsed.push([roundCoord(lat), roundCoord(lon)]);
+        }
+    }
+
+    return parsed;
+}
 
 function updatePointList() {
 
@@ -402,4 +522,8 @@ function redrawPolyline() {
             L.polyline(points)
              .addTo(map);
     }
+}
+
+function roundCoord(value) {
+    return Number(value.toFixed(6));
 }
